@@ -176,9 +176,14 @@ export function Table({ rules, match, dispatch, frameX, onNewMatch }: Props) {
                 <button type="button" className="ghost" onClick={() => dispatch({ type: 'sort', p: active, by: 'rank' })}>Trier rang</button>
                 <button type="button" className="ghost" onClick={() => dispatch({ type: 'sort', p: active, by: 'suit' })}>Trier famille</button>
                 <span className="spacer" />
-                <button type="button" className="blue" disabled={!canDiscard} onClick={() => dispatch({ type: 'discard', p: active, rules })}>
-                  Défausser{n > 0 ? ` (${n})` : ''}
-                </button>
+                <span className="discard-group">
+                  <span className={`discard-left display num${discardsLeft === 0 ? ' is-empty' : ''}`} aria-label={`${discardsLeft} défausses restantes sur ${maxDiscards}`}>
+                    {discardsLeft}/{maxDiscards}
+                  </span>
+                  <button type="button" className="blue" disabled={!canDiscard} onClick={() => dispatch({ type: 'discard', p: active, rules })}>
+                    Défausser{n > 0 ? ` (${n})` : ''}
+                  </button>
+                </span>
                 <button type="button" className="primary" disabled={!canPlay} onClick={() => commit(active, 'play')}>
                   Poser{n > 0 ? ` (${Math.min(n, maxPlay)})` : ''}
                 </button>

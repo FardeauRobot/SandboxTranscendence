@@ -180,8 +180,8 @@
   padding: 14px; box-shadow: var(--shadow); backdrop-filter: blur(3px);
 }
 .played-row { display: flex; flex-wrap: wrap; gap: 6px; min-height: 64px; align-items: center; justify-content: center; }
-.played-row .card { width: 50px; height: 74px; font-size: 16px; padding: 4px; box-shadow: 3px 3px 0 #000; border-width: 2px; }
-.played-row .card-center { font-size: 28px; }
+.played-row .card { width: 54px; height: 90px; border-radius: 5px; box-shadow: 3px 3px 0 #000; }
+.played-row .card.is-scoring { box-shadow: 0 0 0 2px var(--yellow), 3px 3px 0 2px #000; }
 .hint { color: var(--muted); font-size: 22px; letter-spacing: 0.08em; margin: 0; }
 
 /* ---------- Score panel ---------- */
@@ -208,34 +208,42 @@
 .step-effect { color: var(--muted); }
 .step-run { text-align: right; }
 
-/* ---------- Cards ---------- */
+/* ---------- Cards (style tarot) ---------- */
 .card {
-  --suit: #fff;
-  position: relative; width: 76px; height: 112px; padding: 6px; flex: none;
-  display: flex; flex-direction: column; justify-content: space-between;
-  background: var(--ink-2); color: var(--suit);
-  border: 3px solid var(--paper); border-radius: 10px; box-shadow: 5px 5px 0 #000;
-  font-family: var(--display); font-size: 22px; letter-spacing: 0; line-height: 0.9;
-  transition: transform 0.12s, box-shadow 0.12s;
+  position: relative; width: 84px; height: 140px; padding: 0; flex: none;
+  background: transparent; border: 0; border-radius: 7px;
+  box-shadow: 5px 5px 0 #000;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
 }
 .card:disabled { opacity: 1; cursor: default; }
-.card-corner { display: flex; flex-direction: column; align-items: flex-start; }
-.card-corner--bottom { align-items: flex-end; transform: rotate(180deg); }
-.card-center { position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; pointer-events: none; }
-.card.is-selected { transform: translateY(-16px); border-color: var(--yellow); box-shadow: 5px 5px 0 #000, 0 0 22px rgba(255, 210, 63, 0.55); }
-.card.is-scoring { border-color: var(--yellow); }
+.card-face { display: block; width: 100%; height: 100%; }
+.card-numeral { font-family: 'Cinzel', Georgia, serif; font-weight: 900; font-size: 22px; fill: #111; }
+.card-title { font-family: 'Cinzel', Georgia, serif; font-weight: 900; font-size: 11.5px; fill: #111; }
+.card.is-selected {
+  transform: translateY(-16px);
+  box-shadow: 0 0 0 3px var(--yellow), 5px 5px 0 3px #000, 0 0 22px rgba(255, 210, 63, 0.6);
+}
+.card.is-scoring { box-shadow: 0 0 0 3px var(--yellow), 4px 4px 0 3px #000; }
 .card.is-dimmed { opacity: 0.4; }
 .card-order {
   position: absolute; top: -10px; right: -10px; width: 24px; height: 24px; border-radius: 50%;
   display: grid; place-items: center; background: var(--yellow); color: var(--ink); font-size: 16px;
+  font-family: var(--display); border: 2px solid #000;
 }
 
 /* ---------- Hand : en bas, au centre ---------- */
 .hand-zone { grid-column: 1 / -1; grid-row: 3; justify-self: center; width: min(100%, 980px); display: flex; flex-direction: column; gap: 12px; }
-.hand { display: flex; flex-wrap: nowrap; gap: 10px; justify-content: center; padding-top: 18px; min-height: 130px; }
+.hand { display: flex; flex-wrap: nowrap; gap: 10px; justify-content: center; padding-top: 18px; min-height: 158px; }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
 .actions .ghost { background: rgba(17, 17, 17, 0.75); }
 .spacer { flex: 0 0 24px; }
+.discard-group { display: flex; align-items: center; gap: 8px; }
+.discard-left {
+  min-width: 52px; padding: 6px 10px; text-align: center; font-size: 22px; line-height: 1;
+  background: var(--blue-deep); color: var(--paper); border: 3px solid var(--blue); border-radius: 6px;
+  box-shadow: 0 5px 0 #000;
+}
+.discard-left.is-empty { border-color: var(--red); color: var(--red); background: var(--red-deep); }
 .warn { margin: 0; color: var(--yellow); font-size: 14px; text-align: center; text-shadow: 0 1px 0 #000; }
 
 @media (max-width: 760px) {
@@ -251,13 +259,15 @@
   .brand { font-size: 28px; }
   .tag { display: none; }
   .lab-toggle { margin-left: auto; }
-  .card { width: 48px; height: 72px; font-size: 16px; padding: 4px; }
-  .card-center { font-size: 26px; }
+  .card { width: 50px; height: 84px; border-radius: 4px; box-shadow: 3px 3px 0 #000; }
   .hand { gap: 0; }
   .hand .card + .card { margin-left: -6px; }
+  .hand { min-height: 104px; }
   .hud-stats { font-size: 16px; gap: 12px; }
   .score-total { font-size: 34px; }
-  .actions button:not(.ghost) { flex: 1; }
+  .actions button:not(.ghost) { flex: 1 1 auto; white-space: nowrap; }
+  .discard-group { flex: 1 1 auto; }
+  .discard-left { min-width: 0; font-size: 18px; padding: 6px 8px; }
   .spacer { display: none; }
 }
 
