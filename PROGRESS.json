@@ -1,0 +1,51 @@
+{
+  "title": "Aura · bac à sable",
+  "tests": 31,
+  "steps": [
+    {
+      "id": "0",
+      "name": "Scaffold React + DA",
+      "state": "done"
+    },
+    {
+      "id": "1",
+      "name": "Moteur de score + tests",
+      "state": "done"
+    },
+    {
+      "id": "2",
+      "name": "Table de jeu",
+      "state": "done"
+    },
+    {
+      "id": "3",
+      "name": "Foule réactive",
+      "state": "done"
+    },
+    {
+      "id": "4",
+      "name": "Éditeur de règles",
+      "state": "done"
+    },
+    {
+      "id": "4b",
+      "name": "Arène 3D plein écran",
+      "state": "done"
+    },
+    {
+      "id": "4c",
+      "name": "Match 2 joueurs (même écran)",
+      "state": "done"
+    },
+    {
+      "id": "5",
+      "name": "Réglage des règles (équipe)",
+      "state": "current"
+    },
+    {
+      "id": "6",
+      "name": "Modificateurs",
+      "state": "todo"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+/* DA « Aura » : noir, bleu / rouge en split, jaune pour l'accent, ombres pleines décalées. */
+:root {
+  --ink: #111111;
+  --ink-2: #1c1c1c;
+  --ink-3: #2a2a2a;
+  --line: #3a3a3a;
+  --muted: #9a9a9a;
+  --paper: #ffffff;
+  --blue: #1b8fd6;
+  --blue-deep: #0b2a40;
+  --red: #e2264d;
+  --red-deep: #40101a;
+  --yellow: #ffd23f;
+  --display: 'Bebas Neue', Impact, sans-serif;
+  --body: 'Inter', system-ui, sans-serif;
+  --shadow: 8px 8px 0 #000;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; }
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--body);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 3px solid var(--paper);
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 8px 16px;
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+button:hover:not(:disabled) { transform: translate(-1px, -1px); }
+button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none !important; }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+button.primary { background: var(--yellow); color: var(--ink); border-color: var(--ink); box-shadow: 0 5px 0 var(--red); }
+button.blue { background: var(--blue); box-shadow: 0 5px 0 var(--blue-deep); }
+button.ghost { border-width: 2px; font-size: 18px; padding: 4px 12px; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+
+input {
+  font: inherit;
+  color: var(--paper);
+  background: var(--ink);
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 6px;
+  width: 100%;
+  min-width: 0;
+}
+input[type='number'] { font-variant-numeric: tabular-nums; }
+input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--yellow); }
+input[type='color'] { padding: 0; height: 30px; }
+
+.display { font-family: var(--display); font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+button { text-transform: uppercase; }
+.num { font-variant-numeric: tabular-nums; }
