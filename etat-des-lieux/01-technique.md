@@ -71,7 +71,7 @@ Tables : `users` (id, full_name, email, password, timestamps) et `auth_access_to
 |---|---|
 | `src/engine/` | **Pur TS, aucun import React.** `types.ts`, `deck.ts` (RNG à seed), `hands.ts` (détection des mains), `score.ts` (`scoreHand`, étapes du calcul), `match.ts` (réducteur d'un match à 2), `defaultRules.ts`. 31 tests. |
 | `src/ui/` | Table de jeu, cartes, panneau de score, éditeur de règles (« Le labo », export/import JSON), foule 2D. |
-| `src/ui/arena/` | `scene.ts` : arène three.js sans React (ring, 2 combattants, ~500 spectateurs instanciés), pilotée par `setLevel`, `setAura`, `burst`. |
+| `src/ui/arena/` | Arène three.js sans React (ring, 2 combattants Y Bot qui dansent, ~500 spectateurs instanciés), pilotée par `setLevel`, `setAura`, `burst`. `scene.ts` assemble des modules (`config`, `state`, `ring`, `stands`, `crowd`, `fighter`, `dancer`, `lights`, `camera`). |
 
 Avancement (`PROGRESS.json`) : 0 à 4c faits (scaffold, moteur, table, foule, éditeur, arène 3D, match 2 joueurs même écran) ; **5 « Réglage des règles (équipe) » en cours** ; 6 « Modificateurs » à faire.
 
