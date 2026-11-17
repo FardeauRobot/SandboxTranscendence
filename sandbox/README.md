@@ -43,11 +43,27 @@ Les cartes qui ne comptent pas (kickers) sont grisées et ne rapportent rien.
 
 ## L'arène 3D
 
-`src/ui/arena/scene.ts` (three.js, sans React) : ring coupé bleu/rouge, deux combattants, gradins avec ~500
-spectateurs instanciés. Apparences par défaut : capsules + sphères. Pour mettre de vrais modèles, remplacer
-`makeFighter()` et les géométries des `InstancedMesh` de la foule. La scène est pilotée par `setLevel` (foule,
-lumières, tremblement), `setAura(joueur, v)` et `burst(joueur)` (à chaque main posée, la caméra plonge vers ce joueur). Sans WebGL, on retombe
-sur la foule 2D (`Crowd.tsx`).
+`src/ui/arena/` (three.js, sans React sauf `Arena3D.tsx` et `useArena.ts`) : ring coupé bleu/rouge, deux
+combattants, gradins avec ~500 spectateurs instanciés. La scène est pilotée par `setLevel` (foule, lumières,
+tremblement), `setAura(joueur, v)` et `burst(joueur)` (à chaque main posée, le joueur danse et la caméra plonge
+vers lui). Sans WebGL, on retombe sur la foule 2D (`Crowd.tsx`).
+
+| Fichier | Contenu |
+|---|---|
+| `scene.ts` | `createArena()` : assemble les morceaux et tient la boucle de rendu |
+| `config.ts` | tous les réglages : couleurs, danse (`DANCE_CLIP`, `DANCE_REPEAT`, `MODEL_SCALE`, `FADE`), combattants, foule, tribunes |
+| `state.ts` | l'état partagé (niveau, auras, dernière main posée), lissé à chaque frame |
+| `ring.ts` | sol et ring |
+| `stands.ts`, `crowd.ts` | gradins et placement des spectateurs ; foule instanciée et son animation |
+| `fighter.ts` | combattants : silhouette (capsules + sphère), aura, saut et bras |
+| `dancer.ts` | le Y Bot (`public/models/ybot_dances.glb`) : chargement, repos ↔ danse ×N, fondus |
+| `lights.ts`, `camera.ts` | lumières ; caméra (orbite, plongée, tremblement, cadrage) |
+| `materials.ts` | matériau `std()`, dégradé de l'aura, libération des ressources |
+| `Arena3D.tsx`, `useArena.ts`, `webgl.ts` | le composant React, son hook de cycle de vie, le test WebGL |
+
+Combattants : le Y Bot de Mixamo remplace les silhouettes dès qu'il est chargé (elles restent si le chargement
+échoue). Pour d'autres modèles de foule, remplacer les géométries des `InstancedMesh` dans `crowd.ts`.
+Le GLB se regénère avec les scripts de `animation-test/`.
 
 La scène occupe tout l'écran ; HUD, calcul et main flottent par-dessus (`.overlay` dans `app.css`). Le labo est un
 tiroir à droite (bouton en haut). `setFrame` décale le cadrage pour garder les combattants au centre de
