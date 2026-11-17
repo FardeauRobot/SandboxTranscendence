@@ -1,0 +1,116 @@
+DÉCOMPOSITION DES RÈGLES — AURA
+================================
+
+(Valeurs par défaut du bac à sable : src/engine/defaultRules.ts. Tout est réglable dans « Le labo ».)
+
+
+EN UNE PHRASE
+-------------
+Deux joueurs, 5 manches. À chaque manche tu reçois 8 cartes, tu poses la meilleure
+combinaison de poker possible (5 cartes max), elle rapporte des points. Le plus gros
+total après 5 manches gagne.
+
+
+1. LE MATÉRIEL
+--------------
+Un jeu de 52 cartes classique, avec 4 familles :
+    ♥ Coupes    ◆ Deniers    ♠ Épées    ♣ Bâtons
+Rangs : 2 3 4 5 6 7 8 9 10  V (Valet)  D (Dame)  R (Roi)  A (As, la plus forte)
+
+
+2. DÉROULÉ D'UN MATCH
+---------------------
+- 5 manches. Chaque manche, chaque joueur reçoit une donne NEUVE de 8 cartes
+  (les cartes de la manche d'avant ne sont pas gardées).
+- Tu as 45 secondes par manche. Le chrono démarre quand tu cliques « C'est parti ».
+- Pendant ce temps tu peux :
+    a) DÉFAUSSER : sélectionne 1 à 5 cartes, elles sont remplacées par des cartes
+       tirées de la pioche. Ça coûte 1 défausse, quel que soit le nombre de cartes.
+    b) POSER : sélectionne 1 à 5 cartes et pose-les. Ta manche est finie.
+- Tu ne poses qu'UNE seule fois par manche.
+- Chrono à zéro : la sélection en cours est posée automatiquement.
+  Rien de sélectionné = 0 point pour la manche.
+- Qui commence alterne à chaque manche.
+- Victoire : le plus gros score cumulé à la fin des 5 manches (égalité possible).
+
+!! LES DÉFAUSSES : tu en as 10 pour TOUT LE MATCH, pas par manche.
+   Les brûler toutes en manche 1, c'est jouer les 4 suivantes à sec.
+   En moyenne : 2 par manche.
+
+
+3. LES COMBINAISONS (de la plus faible à la plus forte)
+-------------------------------------------------------
+Le jeu reconnaît tout seul la MEILLEURE combinaison dans les cartes que tu poses.
+
+  Combinaison     Exemple            Base chips × mult
+  --------------  -----------------  -----------------
+  Carte haute     A  (rien d'autre)        5 × 1
+  Paire           R R                     10 × 2
+  Double paire    R R  7 7                20 × 2
+  Brelan          9 9 9                   30 × 3
+  Suite           5 6 7 8 9               30 × 4
+  Couleur         5 cartes ♥              35 × 4
+  Full            D D D  4 4              40 × 4
+  Carré           8 8 8 8                 60 × 7
+  Quinte flush    5 6 7 8 9 tous ♠       100 × 8
+
+Précisions :
+- Suite, Couleur et Quinte flush demandent EXACTEMENT 5 cartes.
+- Dans une suite, l'As peut être bas : A 2 3 4 5 marche.
+- Les familles ne se mélangent pas dans une couleur : 5 cartes de la même famille.
+
+
+4. LE CALCUL DU SCORE
+---------------------
+Trois étapes :
+
+  1) La combinaison donne une base :          chips = base   et   mult = base
+  2) Chaque carte QUI COMPTE ajoute ses chips :
+         2 à 10 → leur valeur     V, D, R → 10     As → 11
+  3) Score = chips × mult (arrondi à l'entier inférieur)
+
+« Qui compte » = les cartes qui forment la combinaison. Les autres (les « kickers »)
+sont grisées et ne rapportent RIEN.
+    Ex. tu poses R R 7 4 2 → c'est une paire, seuls les deux Rois comptent.
+    Pour la carte haute, seule la plus haute carte compte.
+    Pour un carré, la 5e carte ne compte pas.
+
+Exemples (règles par défaut) :
+    Paire de Rois        R R             10 + 10 + 10         =  30 × 2 =  60
+    Brelan de 7          7 7 7           30 + 7 + 7 + 7       =  51 × 3 = 153
+    Suite 5 → 9          5 6 7 8 9       30 + 35              =  65 × 4 = 260
+    Couleur ♥            2 5 8 V A       35 + 2+5+8+10+11     =  71 × 4 = 284
+    Full Rois par 5      R R R 5 5       40 + 30 + 10         =  80 × 4 = 320
+    Carré de 2           2 2 2 2         60 + 8               =  68 × 7 = 476
+
+Ce qu'il faut retenir : le MULT pèse beaucoup plus lourd que les chips.
+Un carré de 2 bat un full de Rois. La combinaison compte plus que la hauteur des cartes.
+
+
+5. LES FAMILLES (bonus, neutres par défaut)
+-------------------------------------------
+Chaque famille peut donner un bonus à chaque carte qui compte : +chips, +mult, ×mult.
+Par défaut tous sont à zéro / ×1 : aucune famille ne vaut plus qu'une autre.
+
+Si le labo active un ×mult, L'ORDRE DE SÉLECTION compte : les cartes sont comptées
+dans l'ordre où tu les as cliquées, et un « +mult » appliqué AVANT un « ×mult » est
+multiplié avec lui. Donc : clique d'abord les cartes à +mult, puis celles à ×mult.
+
+
+6. LA FOULE
+-----------
+Purement visuel : plus ta main score haut, plus la foule s'enflamme.
+    Seuils : 40 / 150 / 400 / 900 points → niveaux 1 à 4 (0 = silence, 4 = délire).
+
+
+7. DÉMARRER EN 30 SECONDES — RÉFLEXES DE DÉBUTANT
+-------------------------------------------------
+1. Trie ta main par rang (repère paires/brelans) puis par famille (repère les couleurs).
+2. Tu as déjà un brelan ou mieux ? Pose. Pas besoin de défausser.
+3. Tu as 4 cartes d'une couleur ou 4 cartes qui se suivent ? Une défausse pour tenter
+   la 5e vaut souvent le coup (suite/couleur ≈ 260-300 pts).
+4. Juste une paire ? Défausse les cartes inutiles pour chercher un brelan ou une
+   double paire — mais pense au budget (10 défausses pour 5 manches).
+5. Ne laisse JAMAIS le chrono finir sans rien de sélectionné : c'est 0 point.
+   Sélectionne ta meilleure option dès le début, quitte à la changer ensuite.
+6. Inutile de compléter avec des kickers : ils ne rapportent rien (mais ne coûtent rien).
