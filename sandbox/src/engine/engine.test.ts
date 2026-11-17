@@ -63,7 +63,7 @@ describe('scoreHand', () => {
   it('paire d’As : (10 + 11 + 11) × 2 = 64', () => {
     const r = scoreHand(h('Ac Ae 7b'), DEFAULT_RULES);
     expect(r.hand).toBe('pair');
-    expect(r.chips).toBe(32);
+    expect(r.points).toBe(32);
     expect(r.mult).toBe(2);
     expect(r.score).toBe(64);
   });
@@ -72,12 +72,12 @@ describe('scoreHand', () => {
     expect(scoreHand(h('2c 5c 7c 9c Rc'), DEFAULT_RULES).score).toBe(272);
   });
 
-  it('les familles : +chips, +mult puis ×mult, carte par carte', () => {
+  it('les familles : +points, +mult puis ×mult, carte par carte', () => {
     const rules = cloneRules(DEFAULT_RULES);
-    rules.suits.coupes = { ...rules.suits.coupes, chips: 5, plusMult: 1, xMult: 2 };
-    // paire Ac Ae : base 10×2 ; Ac → +11, +5 chips, mult (2+1)×2 = 6 ; Ae → +11
+    rules.suits.coupes = { ...rules.suits.coupes, points: 5, plusMult: 1, xMult: 2 };
+    // paire Ac Ae : base 10×2 ; Ac → +11, +5 points, mult (2+1)×2 = 6 ; Ae → +11
     const r = scoreHand(h('Ac Ae'), rules);
-    expect(r.chips).toBe(37);
+    expect(r.points).toBe(37);
     expect(r.mult).toBe(6);
     expect(r.score).toBe(222);
     expect(r.steps.map((s) => s.kind)).toEqual(['hand', 'card', 'suit', 'card', 'total']);

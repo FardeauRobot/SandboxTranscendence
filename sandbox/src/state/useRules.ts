@@ -7,11 +7,27 @@ const KEY = 'aura-sandbox:rules:v3';
 const KEY_V1 = 'aura-sandbox:rules:v1';
 const KEY_V2 = 'aura-sandbox:rules:v2';
 
+/** Anciens noms de clés (« chips ») → nouveaux (« points »), pour ne pas perdre un réglage sauvegardé ou importé. */
+const LEGACY_KEYS: Record<string, string> = { chips: 'points', rankChips: 'rankPoints' };
+
+function renameLegacyKeys(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(renameLegacyKeys);
+  if (!v || typeof v !== 'object') return v;
+  const out: Record<string, unknown> = {};
+  for (const [k, val] of Object.entries(v)) {
+    const nk = LEGACY_KEYS[k] ?? k;
+    if (nk !== k && nk in (v as Record<string, unknown>)) continue; // la nouvelle clé gagne
+    out[nk] = renameLegacyKeys(val);
+  }
+  return out;
+}
+
 /**
  * Fusionne un objet inconnu (localStorage, fichier importé) avec les règles par défaut :
  * une clé absente ou du mauvais type garde la valeur par défaut, une clé en trop est ignorée.
  */
 export function mergeRules(input: unknown, base: Rules = DEFAULT_RULES): Rules {
+  input = renameLegacyKeys(input);
   const out = cloneRules(base);
   const walk = (src: unknown, dst: Record<string, unknown>) => {
     if (!src || typeof src !== 'object') return;

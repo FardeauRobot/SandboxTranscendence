@@ -19,7 +19,7 @@ export function ScorePanel({ result, rules, before, preview }: Props) {
       <header className="score-head">
         <span className="display score-hand">{preview ? `Aperçu · ${handLabel}` : handLabel}</span>
         <div className="score-formula">
-          <span className="chip chip--blue num">{fmt(result.chips)}</span>
+          <span className="chip chip--blue num">{fmt(result.points)}</span>
           <span className="display">×</span>
           <span className="chip chip--red num">{fmt(result.mult)}</span>
           <span className="display">=</span>
@@ -44,7 +44,7 @@ export function ScorePanel({ result, rules, before, preview }: Props) {
               <span className="step-label">{s.label}</span>
               <span className="step-effect">{s.effect}</span>
               <span className="step-run num">
-                {fmt(s.chips)} × {fmt(s.mult)}
+                {fmt(s.points)} × {fmt(s.mult)}
               </span>
             </li>
           ))}

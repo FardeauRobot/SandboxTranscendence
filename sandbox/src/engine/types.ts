@@ -29,7 +29,7 @@ export type HandId = (typeof HAND_IDS)[number];
 
 export interface HandRule {
   label: string;
-  chips: number;
+  points: number;
   mult: number;
   enabled: boolean;
 }
@@ -38,8 +38,8 @@ export interface SuitRule {
   name: string;
   symbol: string;
   color: string;
-  /** Ajouté aux chips pour chaque carte de cette famille qui compte. */
-  chips: number;
+  /** Ajouté aux points pour chaque carte de cette famille qui compte. */
+  points: number;
   /** Ajouté au mult pour chaque carte de cette famille qui compte. */
   plusMult: number;
   /** Multiplie le mult pour chaque carte de cette famille qui compte (1 = neutre). */
@@ -60,7 +60,7 @@ export interface GameRule {
 
 export interface Rules {
   hands: Record<HandId, HandRule>;
-  rankChips: Record<Rank, number>;
+  rankPoints: Record<Rank, number>;
   suits: Record<SuitId, SuitRule>;
   game: GameRule;
   /** 4 seuils croissants : score >= seuil[i] → niveau de foule i+1. */
@@ -72,10 +72,10 @@ export type StepKind = 'hand' | 'card' | 'suit' | 'total';
 export interface ScoreStep {
   kind: StepKind;
   label: string;
-  /** Ce que l'étape ajoute, en texte (« +11 chips », « ×1.5 mult »). */
+  /** Ce que l'étape ajoute, en texte (« +11 points », « ×1.5 mult »). */
   effect: string;
   /** Valeurs courantes après l'étape. */
-  chips: number;
+  points: number;
   mult: number;
   cardId?: string;
 }
@@ -84,7 +84,7 @@ export interface ScoreResult {
   hand: HandId | null;
   scoringIds: string[];
   steps: ScoreStep[];
-  chips: number;
+  points: number;
   mult: number;
   score: number;
 }

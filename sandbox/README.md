@@ -26,9 +26,9 @@ se règlent dans le labo.
 
 Pour la main posée, dans l'ordre où les cartes ont été sélectionnées :
 
-1. **Main reconnue** (meilleure main *activée*) → `chips = base`, `mult = base`
-2. **Chaque carte qui compte** → `+ chips du rang`, puis famille : `+ chips`, `+ mult`, `× mult`
-3. **Score** = `floor(chips × mult)`
+1. **Main reconnue** (meilleure main *activée*) → `points = base`, `mult = base`
+2. **Chaque carte qui compte** → `+ points du rang`, puis famille : `+ points`, `+ mult`, `× mult`
+3. **Score** = `floor(points × mult)`
 
 Les cartes qui ne comptent pas (kickers) sont grisées et ne rapportent rien.
 

@@ -75,10 +75,10 @@ export function RulesEditor({ open, rules, update, reset, replace, seed, lockSee
       </header>
 
       <details open>
-        <summary className="display">Mains · chips × mult</summary>
+        <summary className="display">Mains · points × mult</summary>
         <table className="grid">
           <thead>
-            <tr><th>On</th><th>Main</th><th>Chips</th><th>Mult</th></tr>
+            <tr><th>On</th><th>Main</th><th>Points</th><th>Mult</th></tr>
           </thead>
           <tbody>
             {[...HAND_IDS].reverse().map((id) => {
@@ -90,7 +90,7 @@ export function RulesEditor({ open, rules, update, reset, replace, seed, lockSee
                       onChange={(e) => update((r) => { r.hands[id].enabled = e.target.checked; })} />
                   </td>
                   <td>{h.label}</td>
-                  <td><Num label={`Chips ${h.label}`} value={h.chips} min={0} onChange={(n) => update((r) => { r.hands[id].chips = n; })} /></td>
+                  <td><Num label={`Points ${h.label}`} value={h.points} min={0} onChange={(n) => update((r) => { r.hands[id].points = n; })} /></td>
                   <td><Num label={`Mult ${h.label}`} value={h.mult} min={0} step={0.5} onChange={(n) => update((r) => { r.hands[id].mult = n; })} /></td>
                 </tr>
               );
@@ -100,13 +100,13 @@ export function RulesEditor({ open, rules, update, reset, replace, seed, lockSee
       </details>
 
       <details open>
-        <summary className="display">Chips par rang</summary>
+        <summary className="display">Points par rang</summary>
         <div className="ranks">
           {RANKS.map((rank) => (
             <label key={rank}>
               <span className="display">{RANK_LABEL[rank]}</span>
-              <Num label={`Chips du ${RANK_LABEL[rank]}`} value={rules.rankChips[rank]} min={0}
-                onChange={(n) => update((r) => { r.rankChips[rank] = n; })} />
+              <Num label={`Points du ${RANK_LABEL[rank]}`} value={rules.rankPoints[rank]} min={0}
+                onChange={(n) => update((r) => { r.rankPoints[rank] = n; })} />
             </label>
           ))}
         </div>
@@ -114,10 +114,10 @@ export function RulesEditor({ open, rules, update, reset, replace, seed, lockSee
 
       <details open>
         <summary className="display">Familles</summary>
-        <p className="muted small">Par carte qui compte : +chips, +mult, puis ×mult.</p>
+        <p className="muted small">Par carte qui compte : +points, +mult, puis ×mult.</p>
         <table className="grid">
           <thead>
-            <tr><th></th><th>Nom</th><th>+Chips</th><th>+Mult</th><th>×Mult</th></tr>
+            <tr><th></th><th>Nom</th><th>+Points</th><th>+Mult</th><th>×Mult</th></tr>
           </thead>
           <tbody>
             {SUIT_IDS.map((id) => {
@@ -132,7 +132,7 @@ export function RulesEditor({ open, rules, update, reset, replace, seed, lockSee
                     <input type="text" value={s.name} aria-label={`Nom de la famille ${id}`}
                       onChange={(e) => update((r) => { r.suits[id].name = e.target.value; })} />
                   </td>
-                  <td><Num label={`Chips ${s.name}`} value={s.chips} onChange={(n) => update((r) => { r.suits[id].chips = n; })} /></td>
+                  <td><Num label={`Points ${s.name}`} value={s.points} onChange={(n) => update((r) => { r.suits[id].points = n; })} /></td>
                   <td><Num label={`Plus mult ${s.name}`} value={s.plusMult} step={0.5} onChange={(n) => update((r) => { r.suits[id].plusMult = n; })} /></td>
                   <td><Num label={`Fois mult ${s.name}`} value={s.xMult} min={0} step={0.1} onChange={(n) => update((r) => { r.suits[id].xMult = n; })} /></td>
                 </tr>
