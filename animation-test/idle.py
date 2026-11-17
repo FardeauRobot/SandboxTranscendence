@@ -1,67 +1,48 @@
 """Animation de repos : bras le long du corps, respiration, léger balancement. Boucle de 2 s (60 images).
 
-Réutilise le rig de keyframe_dance.py (cibles IK + cuisson en FK), puis exporte un GLB
-avec trois clips : idle, mocap (Mixamo) et keyframes (Chicken Dance réécrite en code).
+Construite avec le même rig que la danse (rig.py), puis exporte un GLB avec trois clips :
+idle, mocap (Mixamo) et keyframes (Chicken Dance réécrite en code, reprise de both.blend).
+
+Lancer depuis un dossier qui contient chicken.fbx et both.blend (keyframe_dance.py d'abord) :
+écrit ybot_dances.glb et idle.blend.
 """
-import sys, math
-sys.path.insert(0, '.')
+import math
+
 import bpy
 
-src = open('keyframe_dance.py').read()
-setup = src[:src.index('# Poses de référence')]
-exec(compile(setup, 'keyframe_dance_setup', 'exec'))  # arm, P, T, key_* ...
+from rig import DANCE_BLEND, GLB, append_action, build_rig, export_glb, mirror, save_blend
 
-BASE_DROP = 0.05
 N = 61  # image 61 = image 1
+STEP = 5  # une clé toutes les 5 images
+BASE_DROP = 0.05  # même flexion de base que la danse ; ici 60 % seulement
 hand = (0.24, 0.0, 0.93); elbow = (0.35, 0.45, 1.15)  # mains pendantes, coudes vers l'arrière
-for f in range(1, N + 1, 5):
+
+
+def key_idle(rig, f):
+    """Une clé de repos à l'image f : la respiration et le balancement font chacun un tour par boucle."""
     ph = (f - 1) / (N - 1) * 2 * math.pi
     breath = math.sin(ph)
     sway = math.sin(ph)  # un balancement par boucle
-    key_hips(f, BASE_DROP * 0.6 + 0.008 * (1 - breath), yaw=1.5 * sway, shift=0.015 * sway)
+    rig.key_hips(f, BASE_DROP * 0.6 + 0.008 * (1 - breath), yaw=1.5 * sway, shift=0.015 * sway)
     lift = 0.012 * breath
-    key_hands(f, (hand[0], hand[1], hand[2] + lift), (-hand[0], hand[1], hand[2] + lift),
-              elbow, mirror(elbow), None, 0.0)
-    key_fingers(f, 18, 10)
-    key_bend(f, 'Spine', -1.2 * breath)
-    key_bend(f, 'Spine2', -1.0 * breath)
-    key_bend(f, 'Neck', 2 + 1.0 * breath, side_deg=1.5 * sway)
+    rig.key_hands(f, (hand[0], hand[1], hand[2] + lift), (-hand[0], hand[1], hand[2] + lift),
+                  elbow, mirror(elbow), None, 0.0)
+    rig.key_fingers(f, 18, 10)
+    rig.key_bend(f, 'Spine', -1.2 * breath)
+    rig.key_bend(f, 'Spine2', -1.0 * breath)
+    rig.key_bend(f, 'Neck', 2 + 1.0 * breath, side_deg=1.5 * sway)
 
-bones = list(arm.pose.bones)
-baked = {}
-for f in range(1, N + 1):
-    sc.frame_set(f)
-    baked[f] = {pb.name: arm.convert_space(pose_bone=pb, matrix=pb.matrix, from_space='POSE', to_space='LOCAL')
-                for pb in bones}
-for pb in bones:
-    for c in list(pb.constraints):
-        pb.constraints.remove(c)
-tmp = arm.animation_data.action
-arm.animation_data.action = None
-for e in T.values():
-    bpy.data.objects.remove(e)
-if tmp:
-    bpy.data.actions.remove(tmp)
-for f in range(1, N + 1):
-    for pb in bones:
-        loc, rot, _ = baked[f][pb.name].decompose()
-        pb.rotation_quaternion = rot
-        pb.keyframe_insert('rotation_quaternion', frame=f)
-        if pb.name == 'mixamorig:Hips':
-            pb.location = loc
-            pb.keyframe_insert('location', frame=f)
-idle = arm.animation_data.action
-idle.name = 'idle'
-idle.use_fake_user = True
 
-# On récupère la Chicken Dance en keyframes déjà cuite
-with bpy.data.libraries.load('/home/claude/dance/both.blend') as (data_from, data_to):
-    data_to.actions = ['keyframes']
-data_to.actions[0].use_fake_user = True
-print('actions', [a.name for a in bpy.data.actions])
+def main():
+    rig = build_rig()
+    for f in range(1, N + 1, STEP):
+        key_idle(rig, f)
+    rig.bake(N, 'idle')
+    append_action(DANCE_BLEND, 'keyframes')  # la Chicken Dance en keyframes, déjà cuite
+    print('actions', [a.name for a in bpy.data.actions])
+    export_glb(GLB)
+    save_blend('idle.blend')
 
-sc.frame_start, sc.frame_end = 1, 144
-bpy.ops.export_scene.gltf(filepath='/home/claude/dance/ybot_dances.glb', export_format='GLB',
-                          export_animation_mode='ACTIONS', export_force_sampling=True, export_frame_step=1,
-                          export_yup=True)
-bpy.ops.wm.save_as_mainfile(filepath='/home/claude/dance/idle.blend')
+
+if __name__ == '__main__':
+    main()
