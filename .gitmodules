@@ -1,0 +1,4 @@
+[submodule "transcendence"]
+	path = transcendence
+	url = git@github.com:AliceTh0rel/Transcendence.git
+	branch = test

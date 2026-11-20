@@ -1,0 +1,35 @@
+#!/bin/sh
+# Garde-fou du sous-module transcendence/ (repo d'équipe).
+# Refuse : push vers main/test/prod, push hors feature/*, suppression de branche,
+# et tout push qui n'est pas en avance rapide (force-push sur le travail d'un collègue).
+# Contourner en connaissance de cause : git push --no-verify
+zero=0000000000000000000000000000000000000000
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  branch=${remote_ref#refs/heads/}
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/test|refs/heads/prod)
+      echo "pre-push : refusé, '$branch' est une branche partagée (passe par une PR)." >&2
+      status=1; continue ;;
+    refs/heads/feature/*) ;;
+    refs/tags/*)
+      echo "pre-push : refusé, pas de tag depuis le bac à sable ($remote_ref)." >&2
+      status=1; continue ;;
+    *)
+      echo "pre-push : refusé, seules les branches feature/* sont autorisées ($remote_ref)." >&2
+      status=1; continue ;;
+  esac
+  case "$local_sha" in
+    *[!0]*) ;;
+    *) echo "pre-push : refusé, suppression de '$branch' sur le remote." >&2
+       status=1; continue ;;
+  esac
+  case "$remote_sha" in
+    *[!0]*)
+      if ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+        echo "pre-push : refusé, '$branch' n'est pas en avance rapide (force-push ou historique distant inconnu : fais un fetch)." >&2
+        status=1
+      fi ;;
+  esac
+done
+exit $status
