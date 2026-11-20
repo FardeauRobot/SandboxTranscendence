@@ -1,6 +1,6 @@
 {
   "title": "Aura · bac à sable",
-  "tests": 31,
+  "tests": 46,
   "steps": [
     {
       "id": "0",
@@ -35,6 +35,21 @@
     {
       "id": "4c",
       "name": "Match 2 joueurs (même écran)",
+      "state": "done"
+    },
+    {
+      "id": "4d",
+      "name": "Éditeur de scène",
+      "state": "done"
+    },
+    {
+      "id": "4e",
+      "name": "Menu ↔ partie (faux serveur)",
+      "state": "done"
+    },
+    {
+      "id": "4f",
+      "name": "Une danse par main",
       "state": "done"
     },
     {

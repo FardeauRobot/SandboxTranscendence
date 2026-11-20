@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState, type Dispatch } from 'react';
 import { matchOver, roundDone, total, winner, type MatchAction, type MatchState, type PlayerId } from '../engine/match';
 import { crowdLevel, scoreHand } from '../engine/score';
 import type { Card as CardT, Rules } from '../engine/types';
+import { danceFor } from './arena/dances';
 import { Card } from './Card';
 import { Crowd } from './Crowd';
 import { ScorePanel } from './ScorePanel';
@@ -79,6 +80,8 @@ export function Table({ rules, match, dispatch, frameX, onNewMatch }: Props) {
   const shownPl = shownP !== null ? match.players[shownP] : null;
   const shown: CardT[] = mode === 'result' ? shownPl?.played ?? [] : selectedCards.slice(0, maxPlay);
   const result = scoreHand(shown, rules);
+  // La danse de la main qui vient d'être posée (lue par l'arène à chaque `pulse`).
+  const dance = mode === 'result' ? danceFor(result.hand, shown) : null;
   const before = mode === 'result' && shownPl?.rulesAtPlay ? scoreHand(shown, shownPl.rulesAtPlay) : null;
 
   const roundScore = (p: PlayerId) => (match.players[p].played ? match.players[p].scores[match.round] ?? 0 : 0);
@@ -106,7 +109,7 @@ export function Table({ rules, match, dispatch, frameX, onNewMatch }: Props) {
     <main className="stage" data-level={level}>
       <div className="stage-bg" aria-hidden="true" />
       <Suspense fallback={<Crowd level={level} pulse={pulse} />}>
-        <Arena3D level={level} auras={auras} pulse={pulse} pulseBy={pulseBy} frameX={frameX} frameY={70} />
+        <Arena3D level={level} auras={auras} pulse={pulse} pulseBy={pulseBy} dance={dance} frameX={frameX} frameY={70} />
       </Suspense>
 
       <div className="overlay">

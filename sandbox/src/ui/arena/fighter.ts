@@ -40,22 +40,20 @@ const JUMP_TIME = 0.6;
 
 // ---------------------------------------------------------------- construction
 
-/** Crée les deux combattants (J1 puis J2) et les ajoute à la scène. */
+/** Crée les deux combattants (J1 puis J2) et les ajoute à la scène, à l'origine. */
 export function createFighters(scene: THREE.Scene): Fighters {
-  const fighters = [createFighter(FIGHTERS[0]), createFighter(FIGHTERS[1])] as const;
+  const fighters = [createFighter(FIGHTERS[0], 0), createFighter(FIGHTERS[1], 1)] as const;
   scene.add(fighters[0].root, fighters[1].root);
   return fighters;
 }
 
-function createFighter(spec: FighterSpec): Fighter {
-  const { x } = spec;
+/** Combattant n° `index` ; sa place et son orientation viennent ensuite de `applyLayout`. */
+function createFighter(spec: FighterSpec, index: number): Fighter {
   const root = new THREE.Group();
-  root.position.set(x, 0.3, 0);
-  root.rotation.y = x < 0 ? Math.PI / 2.4 : -Math.PI / 2.4; // face à face, légèrement tournés vers la caméra
 
   const { body, armL, armR } = createSilhouette(spec.color);
   root.add(body);
-  const { aura, shells, particles } = createAura(spec.auraColor, x < 0 ? 11 : 12);
+  const { aura, shells, particles } = createAura(spec.auraColor, 11 + index);
   root.add(aura);
   const light = new THREE.PointLight(spec.auraColor, 0, 8, 1.5);
   light.position.y = 1.6;

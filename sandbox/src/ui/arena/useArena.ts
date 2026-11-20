@@ -1,5 +1,7 @@
 /** Hook React qui crée l'arène three.js sur un canvas et lui transmet les props d'`Arena3D`. */
 import { useEffect, useRef, type RefObject } from 'react';
+import type { DanceId } from './dances';
+import { loadLayout } from './layout';
 import { createArena, type Arena } from './scene';
 import type { Player } from './state';
 
@@ -11,6 +13,8 @@ export interface ArenaInputs {
   /** Incrémenté à chaque main posée ; `pulseBy` dit qui vient de poser. */
   pulse: number;
   pulseBy: Player;
+  /** La danse de la main qui vient d'être posée (null : aucune main reconnue). */
+  dance: DanceId | null;
   /** Décalage du cadrage en px. */
   frameX: number;
   frameY: number;
@@ -26,7 +30,7 @@ export interface ArenaRefs {
  * Monte l'arène si `enabled` (WebGL disponible), la garde à la taille de `wrap`, la libère au démontage,
  * et lui répercute chaque prop quand elle change (une main posée = `pulse` qui augmente).
  */
-export function useArena(enabled: boolean, { level, auras, pulse, pulseBy, frameX, frameY }: ArenaInputs): ArenaRefs {
+export function useArena(enabled: boolean, { level, auras, pulse, pulseBy, dance, frameX, frameY }: ArenaInputs): ArenaRefs {
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const arena = useRef<Arena | null>(null);
@@ -47,7 +51,7 @@ export function useArena(enabled: boolean, { level, auras, pulse, pulseBy, frame
   useEffect(() => { arena.current?.setLevel(level); }, [level]);
   const [a0, a1] = auras;
   useEffect(() => { arena.current?.setAura(0, a0); arena.current?.setAura(1, a1); }, [a0, a1]);
-  useEffect(() => { if (pulse > 0) arena.current?.burst(pulseBy); }, [pulse]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (pulse > 0) arena.current?.burst(pulseBy, dance); }, [pulse]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { arena.current?.setFrame(frameX, frameY); }, [frameX, frameY]);
 
   return { wrap, canvas };
@@ -60,7 +64,8 @@ function mountArena(
   frame: { x: number; y: number },
 ): { arena: Arena; unmount: () => void } {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const arena = createArena(canvas, reduced);
+  // la disposition enregistrée par l'éditeur de scène, sinon celle par défaut
+  const arena = createArena(canvas, reduced, loadLayout());
   const ro = new ResizeObserver(() => arena.resize(wrap.clientWidth, wrap.clientHeight));
   ro.observe(wrap);
   arena.resize(wrap.clientWidth, wrap.clientHeight);

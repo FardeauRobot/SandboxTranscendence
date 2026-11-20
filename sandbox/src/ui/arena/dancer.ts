@@ -1,23 +1,26 @@
 /**
  * Le danseur : le Y Bot de Mixamo (MODEL_URL), chargé en asynchrone et cloné pour chaque combattant.
- * Le GLB contient trois clips sur le même squelette : `idle` (repos, en boucle), `mocap` (Chicken Dance
- * capturée) et `keyframes` (la même, réécrite en code). Repos en boucle ; à chaque main posée,
- * fondu vers la danse jouée DANCE_REPEAT fois, puis fondu retour vers le repos.
+ * Le GLB contient, sur le même squelette, `idle` (repos, en boucle) et une danse par main (`dances.ts`).
+ * Repos en boucle ; à chaque main posée, fondu vers la danse de cette main jouée DANCE_REPEAT fois,
+ * puis fondu retour vers le repos.
  */
 import * as THREE from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { DANCE_CLIP, DANCE_REPEAT, FADE, IDLE_CLIP, INK, MODEL_SCALE, MODEL_URL } from './config';
+import { DANCE_REPEAT, FADE, IDLE_CLIP, INK, MODEL_SCALE, MODEL_URL } from './config';
+import { DANCE_IDS, type DanceId } from './dances';
 import { std } from './materials';
 
 /** Ce dont on a besoin dans le GLB chargé. */
 export type DancerSource = Pick<GLTF, 'scene' | 'animations'>;
 
-/** Un Y Bot animé : son mixer et ses deux actions (repos et danse). */
+/** Un Y Bot animé : son mixer, le repos, une action par danse et celle en cours. */
 export interface Dancer {
   mixer: THREE.AnimationMixer;
   idle: THREE.AnimationAction;
-  dance: THREE.AnimationAction;
+  dances: Map<DanceId, THREE.AnimationAction>;
+  /** La danse qui joue, null au repos. */
+  current: THREE.AnimationAction | null;
 }
 
 /** Charge le GLB du Y Bot ; en cas d'échec, prévient dans la console et n'appelle pas `onLoad`. */
@@ -56,19 +59,28 @@ function cloneModel(scene: THREE.Object3D, color: number): THREE.Object3D {
   return model;
 }
 
-/** Mixer du modèle : repos lancé tout de suite, danse prête à jouer DANCE_REPEAT fois puis à rendre la main. */
+/** Mixer du modèle : repos lancé tout de suite, chaque danse prête à jouer DANCE_REPEAT fois puis à rendre la main. */
 function createDancer(model: THREE.Object3D, clips: THREE.AnimationClip[]): Dancer {
   const mixer = new THREE.AnimationMixer(model);
   const idle = mixer.clipAction(findClip(clips, IDLE_CLIP));
-  const dance = mixer.clipAction(findClip(clips, DANCE_CLIP));
-  dance.setLoop(THREE.LoopRepeat, DANCE_REPEAT);
-  dance.clampWhenFinished = true;
+  const dances = new Map<DanceId, THREE.AnimationAction>();
+  for (const id of DANCE_IDS) {
+    const clip = THREE.AnimationClip.findByName(clips, id);
+    if (!clip) {
+      console.warn(`[arena] clip « ${id} » absent de ${MODEL_URL} : cette main ne dansera pas`);
+      continue;
+    }
+    const action = mixer.clipAction(clip);
+    action.setLoop(THREE.LoopRepeat, DANCE_REPEAT);
+    action.clampWhenFinished = true;
+    dances.set(id, action);
+  }
   idle.play();
+  const d: Dancer = { mixer, idle, dances, current: null };
   mixer.addEventListener('finished', (e) => {
-    if (e.action !== dance) return;
-    returnToIdle({ mixer, idle, dance });
+    if (e.action === d.current) returnToIdle(d);
   });
-  return { mixer, idle, dance };
+  return d;
 }
 
 function findClip(clips: THREE.AnimationClip[], name: string): THREE.AnimationClip {
@@ -80,17 +92,22 @@ function findClip(clips: THREE.AnimationClip[], name: string): THREE.AnimationCl
 /** Fin de la danse : fondu (2 × FADE) vers le repos, repris depuis le début. */
 function returnToIdle(d: Dancer): void {
   d.idle.reset().fadeIn(FADE * 2).play();
-  d.dance.fadeOut(FADE * 2);
+  d.current?.fadeOut(FADE * 2);
+  d.current = null;
 }
 
 /**
- * Lance la danse (ou la relance si le joueur pose à nouveau pendant qu'il danse).
- * Renvoie false si le Y Bot n'est pas (encore) là.
+ * Lance la danse `id` (ou la relance, ou passe à une autre si le joueur pose à nouveau pendant qu'il danse).
+ * Renvoie false si le Y Bot n'est pas (encore) là ou si ce clip manque.
  */
-export function startDance(d: Dancer | undefined): boolean {
-  if (!d) return false;
-  d.dance.reset().setEffectiveWeight(1).fadeIn(FADE).play();
+export function startDance(d: Dancer | undefined, id: DanceId): boolean {
+  const next = d?.dances.get(id);
+  if (!d || !next) return false;
+  const prev = d.current;
+  next.reset().setEffectiveWeight(1).fadeIn(FADE).play();
+  if (prev && prev !== next) prev.fadeOut(FADE);
   d.idle.fadeOut(FADE);
+  d.current = next;
   return true;
 }
 

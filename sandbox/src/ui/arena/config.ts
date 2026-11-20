@@ -1,6 +1,7 @@
 /**
  * Réglages de l'arène : couleurs, danse du Y Bot, combattants, foule et tribunes.
  * Tous les nombres « de réglage » sont ici ; les modules de construction ne gardent que la géométrie fine.
+ * Les positions (combattants, lumières, caméra) sont à part, dans `layout.ts`, modifiables à la souris.
  */
 
 // ---- Couleurs (DA)
@@ -9,12 +10,9 @@ export const RED = 0xe2264d;
 export const YELLOW = 0xffd23f;
 export const INK = 0x111111;
 
-// ---- Le Y Bot (public/models/ybot_dances.glb, généré par animation-test/idle.py)
-export const MODEL_URL = `${import.meta.env.BASE_URL}models/ybot_dances.glb`;
-/** Les deux versions de la Chicken Dance contenues dans le GLB. */
-export type DanceClip = 'mocap' | 'keyframes';
-/** Clip joué quand une main est posée : 'mocap' ou 'keyframes'. */
-export const DANCE_CLIP: DanceClip = 'mocap';
+// ---- Le Y Bot (public/models/all_dances.glb, généré par Labo/Animations : `idle` + une danse par main)
+export const MODEL_URL = `${import.meta.env.BASE_URL}models/all_dances.glb`;
+// Quelle danse pour quelle main : `dances.ts`.
 /** Clip de repos, joué en boucle entre deux danses. */
 export const IDLE_CLIP = 'idle';
 /** Nombre de fois que la danse est jouée à chaque main posée. */
@@ -30,18 +28,16 @@ export interface FighterSpec {
   color: number;
   /** Couleur de l'aura (coques, particules, lumière). */
   auraColor: number;
-  /** Position sur le ring (le J1 à gauche, le J2 à droite). */
-  x: number;
   /** Décalage (s) de l'animation procédurale, pour que les deux ne bougent pas en miroir. */
   timeOffset: number;
   /** Avance (s) donnée au repos du Y Bot à son chargement, pour la même raison. */
   idleOffset?: number;
 }
 
-/** J1 bleu (aura jaune) à gauche, J2 rouge à droite. */
+/** J1 bleu (aura jaune), J2 rouge. Leur place sur le ring est dans `layout.ts`. */
 export const FIGHTERS: readonly [FighterSpec, FighterSpec] = [
-  { color: BLUE, auraColor: YELLOW, x: -1.9, timeOffset: 0 },
-  { color: RED, auraColor: RED, x: 1.9, timeOffset: 1.3, idleOffset: 0.9 },
+  { color: BLUE, auraColor: YELLOW, timeOffset: 0 },
+  { color: RED, auraColor: RED, timeOffset: 1.3, idleOffset: 0.9 },
 ];
 
 /** Aura minimale affichée au repos (une petite aura de veille). */
