@@ -70,14 +70,15 @@ vers lui). Sans WebGL, on retombe sur la foule 2D (`Crowd.tsx`).
 | Fichier | Contenu |
 |---|---|
 | `scene.ts` | `createArena()` : assemble les morceaux et tient la boucle de rendu |
-| `config.ts` | tous les réglages : couleurs, danse (`DANCE_REPEAT`, `MODEL_SCALE`, `FADE`), combattants, foule, tribunes |
+| `config.ts` | tous les réglages : couleurs, danse (`DANCE_REPEAT`, `MODEL_SCALE`, `FADE`), apparences (`SKINS`), combattants, foule, tribunes |
 | `layout.ts` | la disposition : position des combattants, des lumières et de leurs cibles, de la caméra et de sa visée |
 | `state.ts` | l'état partagé (niveau, auras, dernière main posée), lissé à chaque frame |
 | `ring.ts` | sol et ring |
 | `stands.ts`, `crowd.ts` | gradins et placement des spectateurs ; foule instanciée et son animation |
 | `fighter.ts` | combattants : silhouette (capsules + sphère), aura, saut et bras |
-| `dancer.ts` | le Y Bot (`public/models/all_dances.glb`) : chargement, repos ↔ danse de la main ×N, fondus |
+| `dancer.ts` | le danseur : Y Bot + danses (`public/models/all_dances.glb`), apparences (`public/models/skins/`), repos ↔ danse de la main ×N, fondus |
 | `dances.ts` | main posée → danse (clip de `all_dances.glb`), quinte flush royale comprise |
+| `skins.test.ts` | vérifie qu'une apparence porte tous les os animés par les danses |
 | `lights.ts`, `camera.ts` | lumières ; caméra (orbite, plongée, tremblement, cadrage) |
 | `materials.ts` | matériau `std()`, dégradé de l'aura, libération des ressources |
 | `Arena3D.tsx`, `useArena.ts`, `webgl.ts` | le composant React, son hook de cycle de vie, le test WebGL |
@@ -109,3 +110,15 @@ L'éditeur se greffe sur l'arène via `arena.rig` (caméra de rendu `view`, rapp
 
 **Comparer deux réglages** : coche « Rejouer toujours les mêmes donnes », pose une main, puis modifie les règles.
 Le panneau affiche le score avec les règles du moment de la pose et l'écart.
+
+### Les apparences
+
+Les danses et les corps sont séparés. `all_dances.glb` porte le squelette Mixamo, le Y Bot et tous les clips ;
+une apparence (`public/models/skins/<nom>.glb`) est un autre corps skinné sur **les mêmes os**, sans clips.
+Le mixer relie chaque piste à son os par son nom : les clips du Y Bot s'appliquent donc à n'importe quelle
+apparence, sans retargeting. `SKINS` (`config.ts`) liste les apparences, `FIGHTERS[i].skin` choisit celle de
+chaque joueur (J1 : Volt, J2 : Y Bot rouge). Si le GLB d'une apparence ne charge pas, on retombe sur le Y Bot teinté.
+
+Ajouter une apparence : la rigger sur le squelette de `all_dances.glb` (même noms d'os `mixamorig:*`),
+l'exporter sans animations dans `public/models/skins/`, l'ajouter à `SKINS` et à `skins.test.ts`.
+Volt est fabriqué par `animation-test/volt/build_volt.py` (voir son README).
