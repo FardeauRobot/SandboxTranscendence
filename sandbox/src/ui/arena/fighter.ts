@@ -1,6 +1,6 @@
 /**
  * Les combattants : une silhouette low-poly (capsule + sphère), son aura (coques + particules + lumière)
- * et, une fois chargé, le Y Bot dansant qui remplace la silhouette.
+ * et, une fois chargé, le danseur qui remplace la silhouette : son apparence (SKINS, ex. Volt) ou le Y Bot teinté.
  *
  * Tant que le Y Bot n'est pas là (ou si son chargement échoue), la silhouette respire, saute à la pose
  * et lève les bras avec l'aura. Une fois le Y Bot là, il a son propre repos et sa danse : pas de saut
@@ -8,8 +8,8 @@
  */
 import * as THREE from 'three';
 import { makeRng } from '../../engine/deck';
-import { AURA_IDLE, FIGHTERS, INK, type FighterSpec } from './config';
-import { attachDancer, loadDancerModel, updateDancer, type Dancer } from './dancer';
+import { AURA_IDLE, FIGHTERS, INK, SKINS, type FighterSpec } from './config';
+import { attachDancer, loadDancerModel, loadSkin, updateDancer, type Dancer } from './dancer';
 import { AURA_FADE, std } from './materials';
 import type { ArenaState, Motion, Player } from './state';
 
@@ -136,18 +136,23 @@ function createParticles(color: number, seed: number): THREE.Points {
 // ---------------------------------------------------------------- Y Bot
 
 /**
- * Charge le Y Bot et l'installe sur les deux combattants, à leur couleur.
- * `isDisposed` protège le chargement asynchrone : si l'arène a été libérée entre-temps, on ne touche à rien.
+ * Charge le Y Bot et ses danses, puis habille chaque combattant : son apparence (SKINS) si elle en a une,
+ * sinon le Y Bot à sa couleur. Une apparence qui ne charge pas retombe sur le Y Bot teinté.
+ * `isDisposed` protège les chargements asynchrones : si l'arène a été libérée entre-temps, on ne touche à rien.
  */
 export function equipDancers(fighters: Fighters, isDisposed: () => boolean): void {
-  loadDancerModel((gltf) => {
+  loadDancerModel((bank) => {
     if (isDisposed()) return;
     for (const f of fighters) {
-      f.dancer = attachDancer(f.body, gltf, f.spec.color);
-    }
-    // décale le repos du J2 pour que les deux ne respirent pas en miroir
-    for (const f of fighters) {
-      if (f.spec.idleOffset) f.dancer?.mixer.update(f.spec.idleOffset);
+      const wear = (scene: THREE.Object3D, tint?: number) => {
+        if (isDisposed()) return;
+        f.dancer = attachDancer(f.body, scene, bank.animations, tint);
+        // décale le repos du J2 pour que les deux ne respirent pas en miroir
+        if (f.spec.idleOffset) f.dancer.mixer.update(f.spec.idleOffset);
+      };
+      const url = SKINS[f.spec.skin];
+      if (url) loadSkin(url, (skin) => wear(skin.scene), () => wear(bank.scene, f.spec.color));
+      else wear(bank.scene, f.spec.color);
     }
   });
 }

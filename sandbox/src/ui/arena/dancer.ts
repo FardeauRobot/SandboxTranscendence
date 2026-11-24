@@ -1,6 +1,8 @@
 /**
- * Le danseur : le Y Bot de Mixamo (MODEL_URL), chargé en asynchrone et cloné pour chaque combattant.
- * Le GLB contient, sur le même squelette, `idle` (repos, en boucle) et une danse par main (`dances.ts`).
+ * Le danseur : un corps skinné sur le squelette Mixamo, animé par les clips de MODEL_URL.
+ * MODEL_URL contient, sur ce squelette, le Y Bot, `idle` (repos, en boucle) et une danse par main (`dances.ts`).
+ * Le corps est soit ce Y Bot teinté, soit une apparence (SKINS, ex. Volt) : un autre GLB riggé sur les mêmes
+ * os, sans clips. Comme le mixer relie les pistes aux os par leur nom, les clips du Y Bot s'appliquent tels quels.
  * Repos en boucle ; à chaque main posée, fondu vers la danse de cette main jouée DANCE_REPEAT fois,
  * puis fondu retour vers le repos.
  */
@@ -11,9 +13,6 @@ import { DANCE_REPEAT, FADE, IDLE_CLIP, INK, MODEL_SCALE, MODEL_URL } from './co
 import { DANCE_IDS, type DanceId } from './dances';
 import { std } from './materials';
 
-/** Ce dont on a besoin dans le GLB chargé. */
-export type DancerSource = Pick<GLTF, 'scene' | 'animations'>;
-
 /** Un Y Bot animé : son mixer, le repos, une action par danse et celle en cours. */
 export interface Dancer {
   mixer: THREE.AnimationMixer;
@@ -23,7 +22,7 @@ export interface Dancer {
   current: THREE.AnimationAction | null;
 }
 
-/** Charge le GLB du Y Bot ; en cas d'échec, prévient dans la console et n'appelle pas `onLoad`. */
+/** Charge le GLB du Y Bot et des danses ; en cas d'échec, prévient dans la console et n'appelle pas `onLoad`. */
 export function loadDancerModel(onLoad: (gltf: GLTF) => void): void {
   new GLTFLoader().load(
     MODEL_URL,
@@ -33,26 +32,37 @@ export function loadDancerModel(onLoad: (gltf: GLTF) => void): void {
   );
 }
 
-/**
- * Remplace la silhouette rangée dans `body` par un clone du Y Bot teinté de `color`, et le met au repos.
- * Les enfants déjà présents dans `body` (la silhouette) sont cachés, pas supprimés.
- */
-export function attachDancer(body: THREE.Group, gltf: DancerSource, color: number): Dancer {
-  const model = cloneModel(gltf.scene, color);
-  body.children.forEach((c) => { c.visible = false; });
-  body.add(model);
-  return createDancer(model, gltf.animations);
+/** Charge le GLB d'une apparence (SKINS) ; en cas d'échec, prévient et appelle `onError`. */
+export function loadSkin(url: string, onLoad: (gltf: GLTF) => void, onError: () => void): void {
+  new GLTFLoader().load(url, onLoad, undefined, (err) => {
+    console.warn(`[arena] apparence ${url} non chargée, on garde le Y Bot :`, err);
+    onError();
+  });
 }
 
-/** Clone le Y Bot à l'échelle de l'arène : peau à la couleur du joueur, articulations à l'encre. */
-function cloneModel(scene: THREE.Object3D, color: number): THREE.Object3D {
+/**
+ * Remplace la silhouette rangée dans `body` par un clone de `scene` animé par `clips`, et le met au repos.
+ * `tint` : teinte le Y Bot à la couleur du joueur ; absent, l'apparence garde ses propres matériaux.
+ * Les enfants déjà présents dans `body` (la silhouette) sont cachés, pas supprimés.
+ */
+export function attachDancer(
+  body: THREE.Group, scene: THREE.Object3D, clips: THREE.AnimationClip[], tint?: number,
+): Dancer {
+  const model = cloneModel(scene, tint);
+  body.children.forEach((c) => { c.visible = false; });
+  body.add(model);
+  return createDancer(model, clips);
+}
+
+/** Clone le corps à l'échelle de l'arène. Avec `tint` (Y Bot) : peau à la couleur du joueur, articulations à l'encre. */
+function cloneModel(scene: THREE.Object3D, tint?: number): THREE.Object3D {
   const model = SkeletonUtils.clone(scene);
   model.scale.setScalar(MODEL_SCALE);
   model.traverse((o) => {
     const mesh = o as THREE.Mesh;
     if (!mesh.isMesh) return;
     // Beta_Surface = la peau, Beta_Joints = les articulations
-    mesh.material = mesh.name.includes('Joints') ? std(INK) : std(color);
+    if (tint !== undefined) mesh.material = mesh.name.includes('Joints') ? std(INK) : std(tint);
     mesh.castShadow = true;
     mesh.frustumCulled = false; // la boîte englobante d'un mesh skinné ne suit pas l'animation
   });

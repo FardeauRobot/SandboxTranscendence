@@ -22,10 +22,23 @@ export const MODEL_SCALE = 1.3;
 /** Durée des fondus entre repos et danse (s). Le retour au repos fond sur 2 × FADE. */
 export const FADE = 0.25;
 
+// ---- Apparences (skins)
+// Un GLB par personnage, riggé sur le squelette de MODEL_URL (mêmes noms d'os), sans clips : les danses
+// viennent toujours de MODEL_URL et s'appliquent à n'importe quelle apparence. null = le Y Bot de MODEL_URL,
+// teinté à la couleur du joueur. Fabrication : `animation-test/volt/` à la racine du labo (script Blender).
+export const SKINS = {
+  ybot: null,
+  /** Volt, le robot danseur du casting (concept n° 1) : garde ses propres couleurs. */
+  volt: `${import.meta.env.BASE_URL}models/skins/volt.glb`,
+} as const satisfies Record<string, string | null>;
+export type SkinId = keyof typeof SKINS;
+
 // ---- Combattants
 export interface FighterSpec {
   /** Couleur du corps (silhouette ou Y Bot teinté). */
   color: number;
+  /** Apparence une fois chargée (SKINS). Si son GLB ne charge pas, on retombe sur le Y Bot teinté. */
+  skin: SkinId;
   /** Couleur de l'aura (coques, particules, lumière). */
   auraColor: number;
   /** Décalage (s) de l'animation procédurale, pour que les deux ne bougent pas en miroir. */
@@ -34,10 +47,10 @@ export interface FighterSpec {
   idleOffset?: number;
 }
 
-/** J1 bleu (aura jaune), J2 rouge. Leur place sur le ring est dans `layout.ts`. */
+/** J1 bleu (Volt, aura jaune), J2 rouge (Y Bot). Leur place sur le ring est dans `layout.ts`. */
 export const FIGHTERS: readonly [FighterSpec, FighterSpec] = [
-  { color: BLUE, auraColor: YELLOW, timeOffset: 0 },
-  { color: RED, auraColor: RED, timeOffset: 1.3, idleOffset: 0.9 },
+  { color: BLUE, skin: 'volt', auraColor: YELLOW, timeOffset: 0 },
+  { color: RED, skin: 'ybot', auraColor: RED, timeOffset: 1.3, idleOffset: 0.9 },
 ];
 
 /** Aura minimale affichée au repos (une petite aura de veille). */
